@@ -97,13 +97,17 @@ There are 2 steps:
 
 At the end of the script, sample data will be printed to allow sanity check, and a couple tests are run to verify the content of the table. 
 
+Staging Tables
+
 ![staging_songs table][staging_songs]
 ![staging_events table][staging_events]
 
 Fact Table
+
 ![songs table][songplay]
 
 Dimension Tables
+
 ![songs table][songs]
 ![artists table][artists]
 ![users table][users]
@@ -137,11 +141,11 @@ and we get:
 
 | first_name | last_name | cnt |
 | ------------- |:-------------:|:-------------:|
-| Chloe | Cuevas | 689 |
-| Tegan | Levine | 665 |
-| Kate | Harrell | 557 |
-| Lily | Koch | 463 | 
-| Aleena | Kirby | 397 |
+| Chloe | Cuevas | 41 |
+| Tegan | Levine | 31 |
+| Kate | Harrell | 28 |
+| Lily | Koch | 20 | 
+| Aleena | Kirby | 18 |
 
 We can also look for the top 5 most popular locations where songs are played, using the following query:
 
@@ -156,9 +160,9 @@ SELECT location,
 
 | location | count |
 | ------------- |:-------------:|
-| San Francisco-Oakland-Hayward, CA | 691
-| Portland-South Portland, ME | 665
-| Lansing-East Lansing, MI | 557
-| Chicago-Naperville-Elgin, IL-IN-WI | 475
-| Atlanta-Sandy Springs-Roswell, GA | 456
+| San Francisco-Oakland-Hayward, CA | 41
+| Portland-South Portland, ME | 31
+| Lansing-East Lansing, MI | 28
+| Chicago-Naperville-Elgin, IL-IN-WI | 20
+| Atlanta-Sandy Springs-Roswell, GA | 18
 
