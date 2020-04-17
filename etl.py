@@ -10,6 +10,11 @@ from sql_queries import (
 
 
 def load_staging_tables(cur):
+    """ Load data from S3 into the staging tables
+
+        Args:
+        * cur: the cursor to the db connection
+    """
     print("=== Loading S3 files into staging tables...")
     for query in copy_table_queries:
         try:
@@ -22,6 +27,12 @@ def load_staging_tables(cur):
 
 
 def insert_tables(cur):
+    """ Process the staging data and populate the fact and
+        dimension tables.
+
+        Args:
+        * cur: the cursor to the db connection
+    """
     print("=== Inserting staging data into main tables...")
     for query in insert_table_queries:
         try:
@@ -33,6 +44,12 @@ def insert_tables(cur):
             print(e)
 
 def run_tests(cur):
+    """ Run test queries on the final dataset for analysis
+
+        Args:
+        * cur: the cursor to the db connection
+    """
+
     print("=== Runs tests...")
     for query in tests_queries:
         try:
@@ -45,6 +62,11 @@ def run_tests(cur):
             print(e)
 
 def check_tables(cur):
+    """ Print a subsample of the data in each of the final tablesk.
+
+        Args:
+        * cur: the cursor to the db connection
+    """
     tables = (
                 ("staging_events", 
                     ("artist", "auth", "firstName", "gender" ,
@@ -91,6 +113,9 @@ def check_tables(cur):
 
 
 def setup_db_connection():
+    """ Setup the connection to the Redshift dB
+    """
+
     print ("=== Setup dB Connection")
     config = configparser.ConfigParser()
     config_redshift = configparser.ConfigParser()
@@ -107,6 +132,9 @@ def setup_db_connection():
     return conn
 
 def main():
+    """ Main entrypoint for the script
+    """
+
     conn = setup_db_connection()
     cur = conn.cursor()
     

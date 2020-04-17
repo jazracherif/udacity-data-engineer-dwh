@@ -27,15 +27,37 @@ def pretty_redshift_props(props):
     return pd.DataFrame(data=x, columns=["Key", "Value"])
 
 def print_dot():
+    """ Print a dot on the screen without returning to
+        the nexst line. Good for showing wait
+    """
     sys.stdout.write(".")
     sys.stdout.flush()
 
 def sleep_wait(timeout_s):
+    """ wait a certain time and print a dot on the screen
+
+    args:
+        * timeout_s: the amount of time to sleep in seconds
+    """
+
     time.sleep(timeout_s)
     print_dot()
 
 def update_config(config_file, section, values):
+    """ Update or create a config file with the given
+        section and values. 
 
+        Output is a file of the form
+        [section]
+        key1=value1
+        key2=value2
+
+        args:
+            * config_file (str): the name of the config file. If not
+                provided, it will be created
+            * section (str):  the name of the section
+            * values (dict): values to set
+    """
     config = configparser.ConfigParser()
 
     if os.path.exists(config_file):
@@ -50,8 +72,9 @@ def update_config(config_file, section, values):
     config.write(open(config_file, 'w+'), space_around_delimiters=False)
 
 
-# Initiatialize config
 def initialize_config(config_file, credentials_file):
+    """ Initiatialize the Redshift configuration to use
+    """
 
     CFG = {}
 
@@ -103,6 +126,8 @@ def initialize_config(config_file, credentials_file):
     return CFG
 
 def create_redshift_role_arn(CFG, iam):
+    """ Create a Role for the Redshift cluster
+    """
     print('=== Create Redshift IAM Role')
 
     # Create the IAM role to allow redshift access to S3
@@ -297,6 +322,8 @@ def delete_cluster(CFG, redshift, iam):
     print("Done!")
 
 def argparser():
+    """ Command Line parser for the script
+    """
 
     parser = argparse.ArgumentParser(description='Management utility for Redshift cluster')
     parser.add_argument('--cmd', 
@@ -311,6 +338,8 @@ def argparser():
 
 
 def main():
+    """ Main entrypoint for the script
+    """
     args = argparser()
     cmd = args.cmd
 

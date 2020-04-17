@@ -12,6 +12,11 @@ from sql_queries import (
 
 
 def drop_tables(cur):
+    """ Delete all the tables used by the data warehouse
+
+        Args:
+        * cur: the cursor to the db connection
+    """
     print("=== Dropping Tables...")
     for query in drop_table_queries:
         try:
@@ -21,6 +26,11 @@ def drop_tables(cur):
 
 
 def create_tables(cur):
+    """ Create all the tables needed for the data warehouse
+
+    Args:
+        * cur: the cursor to the db connection
+    """
     print("=== Creating Tables...")
     for query in create_table_queries:
         try:
@@ -62,6 +72,9 @@ def create_jsonpath():
 
 
 def setup_db_connection():
+    """ Setup the connection to the Redshift dB
+    """
+
     print ("=== Setup dB Connection")
     config = configparser.ConfigParser()
     config_redshift = configparser.ConfigParser()
@@ -78,6 +91,9 @@ def setup_db_connection():
     return conn
 
 def main():
+    """ Main entrypoint for the script
+    """
+
     conn = setup_db_connection()
     cur = conn.cursor()
 

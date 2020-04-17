@@ -37,19 +37,19 @@ staging_events_table_create= ("""
         status          INTEGER,
         ts              BIGINT,
         userAgent       VARCHAR(65535),
-        userId          VARCHAR(1024) NOT NULL
+        userId          VARCHAR(1024)
     );
 """)
 
 staging_songs_table_create = ("""
     CREATE TABLE staging_songs (
         num_songs           INTEGER,
-        artist_id           VARCHAR(1024) NOT NULL,
+        artist_id           VARCHAR(1024),
         artist_latitude     REAL,
         artist_longitude    REAL,
         artist_location     VARCHAR(1024),
         artist_name         VARCHAR(1024),
-        song_id             VARCHAR(1024) NOT NULL,
+        song_id             VARCHAR(1024),
         title               VARCHAR(1024) distkey,
         duration            REAL,
         year                VARCHAR(1024)
@@ -149,8 +149,8 @@ songplay_table_insert = ("""
            e.userAgent AS user_agent
     FROM staging_events e
     LEFT JOIN staging_songs s ON e.song = s.title
-            and e.artist = s.artist_name
-            and e.length = s.duration
+            AND e.artist = s.artist_name
+            AND e.length = s.duration
     WHERE e.page = 'NextSong'
       AND s.song_id IS NOT NULL
       AND s.artist_id IS NOT NULL
@@ -195,13 +195,13 @@ artist_table_insert = ("""
 
 time_table_insert = ("""
     INSERT INTO time 
-    SELECT ts start_time,
-           EXTRACT(hour from timestamp 'epoch' + ts/1000 * interval '1 second') AS hour,
-           EXTRACT(day from timestamp 'epoch' + ts/1000 * interval '1 second') AS day,
-           EXTRACT(week from timestamp 'epoch' + ts/1000 * interval '1 second') AS week,
-           EXTRACT(month from timestamp 'epoch' + ts/1000 * interval '1 second') AS monty,
-           EXTRACT(year from timestamp 'epoch' + ts/1000 * interval '1 second') AS year,
-           EXTRACT(weekday from timestamp 'epoch' + ts/1000 * interval '1 second') AS weekday
+    SELECT DISTINCT ts AS start_time,
+           EXTRACT(hour FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS hour,
+           EXTRACT(day FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS day,
+           EXTRACT(week FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS week,
+           EXTRACT(month FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS monty,
+           EXTRACT(year FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS year,
+           EXTRACT(weekday FROM timestamp 'epoch' + ts/1000 * interval '1 second') AS weekday
       FROM staging_events
      WHERE page = 'NextSong'
 """)
@@ -236,6 +236,7 @@ SELECT location,
  LIMIT 5
 """
 )
+
 
 # QUERY LISTS
 
