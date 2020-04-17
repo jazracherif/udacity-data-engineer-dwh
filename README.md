@@ -1,4 +1,4 @@
-# udacity-data-engineer-dwh: Sparkify ETL Pipeline
+# Sparkify ETL Pipeline (Udacity Data-engineer DataWarhouse project)
 
 This projects generates a data warehouse using Redshift and S3 and implements a pipeline to ingest S3 files into the database. 
 
