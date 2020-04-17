@@ -63,8 +63,8 @@ songplay_table_create = ("""
         start_time      BIGINT NOT NULL, 
         user_id         TEXT NOT NULL DISTKEY, 
         level           TEXT,
-        song_id         TEXT , --NOT NULL, 
-        artist_id       TEXT, -- NOT NULL, 
+        song_id         TEXT  NOT NULL, 
+        artist_id       TEXT  NOT NULL, 
         session_id      INTEGER, 
         location        TEXT sortkey, 
         user_agent      TEXT
@@ -152,6 +152,9 @@ songplay_table_insert = ("""
             and e.artist = s.artist_name
             and e.length = s.duration
     WHERE e.page = 'NextSong'
+      AND s.song_id IS NOT NULL
+      AND s.artist_id IS NOT NULL
+
 """)
 
 user_table_insert = ("""
@@ -193,12 +196,12 @@ artist_table_insert = ("""
 time_table_insert = ("""
     INSERT INTO time 
     SELECT ts start_time,
-           EXTRACT(hour from timestamp 'epoch' + ts/1000 * interval '1 second') as hour,
-           EXTRACT(day from timestamp 'epoch' + ts/1000 * interval '1 second') as day,
-           EXTRACT(week from timestamp 'epoch' + ts/1000 * interval '1 second') as week,
-           EXTRACT(month from timestamp 'epoch' + ts/1000 * interval '1 second') as monty,
-           EXTRACT(year from timestamp 'epoch' + ts/1000 * interval '1 second') as year,
-           EXTRACT(weekday from timestamp 'epoch' + ts/1000 * interval '1 second') as weekday
+           EXTRACT(hour from timestamp 'epoch' + ts/1000 * interval '1 second') AS hour,
+           EXTRACT(day from timestamp 'epoch' + ts/1000 * interval '1 second') AS day,
+           EXTRACT(week from timestamp 'epoch' + ts/1000 * interval '1 second') AS week,
+           EXTRACT(month from timestamp 'epoch' + ts/1000 * interval '1 second') AS monty,
+           EXTRACT(year from timestamp 'epoch' + ts/1000 * interval '1 second') AS year,
+           EXTRACT(weekday from timestamp 'epoch' + ts/1000 * interval '1 second') AS weekday
       FROM staging_events
      WHERE page = 'NextSong'
 """)
@@ -218,7 +221,7 @@ SELECT users.first_name,
        top_users.cnt
   FROM top_users
  INNER JOIN users
-       on users.user_id = top_users.user_id
+       ON users.user_id = top_users.user_id
  ORDER BY cnt DESC
 """
 )
@@ -226,7 +229,7 @@ SELECT users.first_name,
 test2 = (
 """
 SELECT location, 
-       count(*) as cnt 
+       count(*) AS cnt 
   FROM songplay
  GROUP BY location 
  ORDER BY cnt DESC 
