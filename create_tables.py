@@ -1,32 +1,91 @@
 import configparser
 import psycopg2
-from sql_queries import create_table_queries, drop_table_queries
+import sqlparse
+import json
+
+from sql_queries import (
+    create_table_queries, 
+    drop_table_queries,
+    copy_table_queries,
+    insert_table_queries,
+)
 
 
-def drop_tables(cur, conn):
+def drop_tables(cur):
+    print("=== Dropping Tables...")
     for query in drop_table_queries:
-        cur.execute(query)
-        conn.commit()
+        try:
+            cur.execute(query)
+        except Exception as e:
+            print(e)
 
 
-def create_tables(cur, conn):
+def create_tables(cur):
+    print("=== Creating Tables...")
     for query in create_table_queries:
-        cur.execute(query)
-        conn.commit()
+        try:
+            cur.execute(query)
+        except Exception as e:
+            print(e)
 
+
+def create_jsonpath():
+    """ Create manifest file for reading json files from S3.
+        Needed because some of the keys have capitalization which
+        the `auto` setting doesn't handle properly.
+    """
+
+    data = {
+        "jsonpaths": [
+            "$['artist']",
+            "$['auth']",
+            "$['firstName']",
+            "$['gender']",
+            "$['itemInSession']",
+            "$['lastName']",
+            "$['length']",
+            "$['level']",
+            "$['location']",
+            "$['method']",
+            "$['page']",
+            "$['registration']",
+            "$['sessionId']",
+            "$['song']",
+            "$['status']",
+            "$['ts']",
+            "$['userAgent']",
+            "$['userId']",
+        ]
+    }
+
+    json.dump(data, open("events.jsonpaths", 'w+'))
+
+
+def setup_db_connection():
+    print ("=== Setup dB Connection")
+    config = configparser.ConfigParser()
+    config_redshift = configparser.ConfigParser()
+
+    config.read('dwh.cfg')
+    config_redshift.read('cluster.cfg')
+
+    conn = psycopg2.connect("host={} dbname={} user={} password={} port={}"
+                            .format(config_redshift.get("REDSHIFT", "dwh_endpoint"),
+                                    *config['REDSHIFT'].values())
+                        )
+    print("Connected!")
+    conn.set_session(autocommit=True)
+    return conn
 
 def main():
-    config = configparser.ConfigParser()
-    config.read('dwh.cfg')
-
-    conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
+    conn = setup_db_connection()
     cur = conn.cursor()
 
-    drop_tables(cur, conn)
-    create_tables(cur, conn)
+    drop_tables(cur)
+    create_tables(cur)
 
     conn.close()
-
+    print ("Done!")
 
 if __name__ == "__main__":
     main()
