@@ -155,6 +155,17 @@ def create_redshift_role_arn(CFG, iam):
 
 
 def create_cluster(CFG, redshift, ec2, roleArn):
+    """ Create a Redshift Cluster
+
+    If the cluster already exist, do nothing
+    If the cluster creation is process, wait till it is done and continue on.
+
+    param:
+        * CFG: the config file for the project
+        * redshift: boto3 client for redshift
+        * ec2: boto3 ressource for ec2
+        * roleARN: the ARN of the role to assign to this cluster
+    """
     print('=== Create Cluster')
 
     # Check if cluster exists, create if not
@@ -163,6 +174,7 @@ def create_cluster(CFG, redshift, ec2, roleArn):
         myClusterProps = redshift.describe_clusters(
                                 ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"] 
                             )['Clusters'][0]
+        print("Cluster creation already started.")
     except:
         pass
 
@@ -183,9 +195,9 @@ def create_cluster(CFG, redshift, ec2, roleArn):
             # parameter for role (to allow s3 access)
             IamRoles=[roleArn],
         )
-        sys.stdout.write("creating...")
+        myClusterProps = {"ClusterStatus" != "creating"}
 
-
+    sys.stdout.write("creating...")
     while myClusterProps["ClusterStatus"] != "available":
         myClusterProps = redshift.describe_clusters(
                           ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"])['Clusters'][0]
@@ -232,34 +244,57 @@ def create_cluster(CFG, redshift, ec2, roleArn):
 
 
 def delete_cluster(CFG, redshift, iam):
+    """ Delete the Redshift cluster.
 
+    The cluster is identified by CFG["DWH_CLUSTER_IDENTIFIER"]
+    if the cluster is available, initiate the deletion procedure 
+
+    params:
+        * CFG: the config file for the project
+        * redshift: boto3 client for redshift
+        * iam: boto3 client for iam
+
+    """
     print("=== Delete Cluster")
-    redshift.delete_cluster(ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"],
-                            SkipFinalClusterSnapshot=True)
 
-    myClusterProps = redshift.describe_clusters(
+    myClusterProps = None
+    try:
+        myClusterProps = redshift.describe_clusters(
                           ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"] 
                       )['Clusters'][0]
+    except Exception as e:
+        pass
+
+    if myClusterProps and myClusterProps["ClusterStatus"]["available"]:
+        redshift.delete_cluster(ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"],
+                            SkipFinalClusterSnapshot=True)
 
     sys.stdout.write("deleting...")
-    while myClusterProps["ClusterStatus"] != "deleted":
+    while myClusterProps is not None and myClusterProps["ClusterStatus"] != "deleted":
         try:
             myClusterProps = redshift.describe_clusters(
                               ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"])['Clusters'][0]
             sleep_wait(1)
-        except redshift.exception.ClusterNotFoundFault:
+        except exceptions.exceptions.ClusterNotFoundFault:
             break
 
     print("Cluster Deleted!")
 
-    iam.detach_role_policy(
-            RoleName=CFG["DWH_IAM_ROLE_NAME"],
-            PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
-        )
-    iam.delete_role(RoleName=CFG["DWH_IAM_ROLE_NAME"])
+    try:
+        iam.detach_role_policy(
+                RoleName=CFG["DWH_IAM_ROLE_NAME"],
+                PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+            )
+        print("IAM Role Policy Detached")
 
-    print("IAM Role Deleted!")
+        iam.delete_role(RoleName=CFG["DWH_IAM_ROLE_NAME"])
 
+        print("IAM Role Deleted")
+
+    except iam.exceptions.NoSuchEntityException as e:
+        print ("IAM Role already deleted")
+
+    print("Done!")
 
 def argparser():
 
