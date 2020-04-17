@@ -122,7 +122,7 @@ For example, we can find the top 5 power users with the following query:
 
 ~~~ sql
 WITH top_users AS (
-    SELECT user_id, COUNT(*) AS cnt
+    SELECT user_id, COUNT(*) AS count
     FROM songplay
     GROUP BY user_id
     ORDER BY cnt DESC
