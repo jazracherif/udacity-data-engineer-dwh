@@ -290,7 +290,9 @@ def delete_cluster(CFG, redshift, iam):
     except Exception as e:
         pass
 
-    if myClusterProps and myClusterProps["ClusterStatus"]["available"]:
+
+    if myClusterProps and myClusterProps["ClusterStatus"] == "available":
+        print ("Cluster Available, initiate delete")
         redshift.delete_cluster(ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"],
                             SkipFinalClusterSnapshot=True)
 
@@ -300,7 +302,7 @@ def delete_cluster(CFG, redshift, iam):
             myClusterProps = redshift.describe_clusters(
                               ClusterIdentifier=CFG["DWH_CLUSTER_IDENTIFIER"])['Clusters'][0]
             sleep_wait(1)
-        except exceptions.exceptions.ClusterNotFoundFault:
+        except redshift.exceptions.ClusterNotFoundFault:
             break
 
     print("Cluster Deleted!")
